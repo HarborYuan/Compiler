@@ -83,7 +83,7 @@ expression -> PLUS expression expression
 		char *reg_name = newname();
 		temp->val = reg_name;
 		//printf("%s = %s %c %s\n", reg_name, name1, op, name2);
-		printf("%s %c= %s\n", reg_name, op,name1);
+		printf("%s %c= %s\n", reg_name, op, name1);
 	}
 	else if (match(TIMES) || match(DIVISION))
 	{
@@ -107,7 +107,7 @@ expression -> PLUS expression expression
 				char *reg_name = newname();
 				temp->val = reg_name;
 				//printf("%s = %s %c %s\n", reg_name, name1, op, name2);
-				printf("%s %c= %s\n", reg_name, op,name1);
+				printf("%s %c= %s\n", reg_name, op, name1);
 			}
 			else if (temp2->last_op != 1)
 			{
@@ -122,7 +122,7 @@ expression -> PLUS expression expression
 				char *reg_name = newname();
 				temp->val = reg_name;
 				//printf("%s = %s %c %s\n", reg_name, name1, op, name2);
-				printf("%s %c= %s\n", reg_name, op,name1);
+				printf("%s %c= %s\n", reg_name, op, name1);
 			}
 			else
 			{
@@ -137,7 +137,7 @@ expression -> PLUS expression expression
 				char *reg_name = newname();
 				temp->val = reg_name;
 				//printf("%s = %s %c %s\n", reg_name, name1, op, name2);
-				printf("%s %c= %s\n", reg_name, op,name1);
+				printf("%s %c= %s\n", reg_name, op, name1);
 			}
 		}
 		else
@@ -152,7 +152,7 @@ expression -> PLUS expression expression
 			char *reg_name = newname();
 			temp->val = reg_name;
 			//printf("%s = %s %c %s\n", reg_name, name1, op, name2);
-			printf("%s %c= %s\n", reg_name, op,name1);
+			printf("%s %c= %s\n", reg_name, op, name1);
 		}
 	}
 	else if (match(NUM_OR_ID))
