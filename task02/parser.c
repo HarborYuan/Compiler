@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include "ast.h"
 
+#define MAXNODE 10000
+
 /* reg -> term  reg'
    reg' -> '|' term reg' | epsilon
    term -> kleene term'
@@ -35,6 +37,9 @@ static char *current = input_buffer;
    here (* current = ? ) - next_token() */
 
 static int pos = 0; /* for dfa only */
+
+static int rank[MAXNODE];
+static int rank_index;
 
 void next_token(void)
 {
@@ -63,6 +68,8 @@ AST_PTR kleene1(AST_PTR fac_left);
 AST_PTR fac();
 ///**********************【思考题】去掉多余括号的函数********************///
 void simplify_print(AST_PTR tree);
+void print_tree_plus(AST_PTR tree);
+int rank_calc(AST_PTR tree);
 
 AST_PTR start()
 {
@@ -71,6 +78,7 @@ AST_PTR start()
   leaf = mkLeaf('$', pos);
   root = mkOpNode(Seq, root, leaf);
   simplify_print(root);
+  printf("\n");
 
   if (*current != '\0')
     printf("the parser finished at %c, before the end of RE\n", *current);
@@ -165,4 +173,96 @@ AST_PTR fac()
 
 void simplify_print(AST_PTR tree)
 {
+  AST_PTR ttree = tree ->lchild;
+  rank_index = 0;
+  rank_calc(ttree);
+  rank_index = 0;
+  print_tree_plus(ttree);
+}
+
+void print_tree_plus(AST_PTR tree)
+{
+    if (tree == NULL) {
+    printf("attempt print empty tree!\n");
+    return;
+}
+  
+  switch (tree -> op ) {
+  case Star : 
+    if (rank[rank_index]==1)
+    {
+      print_tree_plus (tree ->lchild); 
+      printf("%s", "*");
+    }
+    else if (rank[rank_index]>1)
+    {
+      printf("%c",'(');
+      print_tree_plus (tree ->lchild); 
+      printf("%c",')');
+      printf("%s", "*");
+    }
+    rank_index++;
+    return;
+  case Seq : 
+    print_tree_plus (tree -> lchild);
+    print_tree_plus (tree -> rchild);
+    rank_index++;
+    return;
+  case Or : 
+    if (1==2)
+    {
+    printf("%c", '(');
+    print_tree_plus (tree -> lchild);
+    printf("%c", '|');
+    print_tree_plus (tree -> rchild);
+    printf("%c", ')');
+    }
+    else if (1==1)
+    {
+    print_tree_plus (tree -> lchild);
+    printf("%c", '|');
+    print_tree_plus (tree -> rchild);
+    }
+    rank_index++;
+    return;
+  case Alpha : 
+    printf("%c", tree -> val);
+    rank_index++;
+    return;
+  case Epsilon :
+    printf("!");
+    rank_index++;
+    return;
+  }
+}
+
+int rank_calc(AST_PTR tree)
+{
+   if (tree == NULL) {
+    printf("attempt print empty tree!\n");
+    return -1;
+  }
+  int rankl,rankr;
+  switch (tree -> op ) {
+  case Star : 
+    rankl = rank_calc (tree ->lchild);
+    rank[rank_index++]=rankl;
+    return rankl;
+  case Seq : 
+    rankl = rank_calc (tree -> lchild);
+    rankr = rank_calc (tree -> rchild);
+    rank[rank_index++]=rankr;
+    return rankr+1;
+  case Or : 
+    rankl = rank_calc (tree -> lchild);
+    rankr = rank_calc (tree -> rchild);
+    rank[rank_index++]=rankr;
+    return rankr+rankl;
+  case Alpha : 
+    rank[rank_index++]=1;
+    return 1;
+  case Epsilon :
+    rank[rank_index++]=1;
+    return 1;
+  }
 }
