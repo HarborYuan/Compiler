@@ -3,7 +3,7 @@
 	Author: Yuan Haobo
 	Contact: yuanhaobo@whu.edu.cn
 	License: Copyright (c) 2018 Yuan Haobo
-	Last Modified: 2018-09-20
+	Last Modified: 2018-11-13
 */
 
 /* retinf.c   	AXL分析器 */
@@ -29,14 +29,13 @@ typedef struct YYLVAL Yylval;
 
 Yylval *expression(void);
 
-char *newname(void); /* 在name.c中定义 */
+char *newname(void);
 
 extern void freename(char *name);
 
 void statements(void)
 {
 	/*  statements -> expression SEMI  |  expression SEMI statements  */
-	/*  请完成！！！*/
 
 	printf("Please enter a prefix expression and ending with \";\" :\n");
 	while (!match(EOI))
@@ -65,7 +64,6 @@ expression -> PLUS expression expression
 |  DIVISION expression expression
 |  NUM_OR_ID
 */
-	/*  请完成！！！*/
 	Yylval *temp = (Yylval *)malloc(sizeof(Yylval));
 	if (match(PLUS) || match(MINUS))
 	{

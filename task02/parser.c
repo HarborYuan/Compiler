@@ -4,6 +4,14 @@
 /*             2018.09.20                                   */
 /************************************************************/
 
+/*
+	File: parser.c
+	Author: Yuan Haobo
+	Contact: yuanhaobo@whu.edu.cn
+	License: Copyright (c) 2018 Yuan Haobo
+	Last Modified: 2018-11-13
+*/
+
 #include <ctype.h>
 #include <stdlib.h>
 #include "ast.h"
@@ -58,11 +66,11 @@ void simplify_print(AST_PTR tree);
 
 AST_PTR start()
 {
-  AST_PTR leaf, root = reg(); 
+  AST_PTR leaf, root = reg();
   pos++;
   leaf = mkLeaf('$', pos);
-  root = mkOpNode(Seq, root, leaf); 
-  simplify_print(root);         
+  root = mkOpNode(Seq, root, leaf);
+  simplify_print(root);
 
   if (*current != '\0')
     printf("the parser finished at %c, before the end of RE\n", *current);
