@@ -173,7 +173,7 @@ AST_PTR fac()
 
 void simplify_print(AST_PTR tree)
 {
-  AST_PTR ttree = tree ->lchild;
+  AST_PTR ttree = tree->lchild;
   rank_index = 0;
   rank_calc(ttree);
   rank_index = 0;
@@ -182,54 +182,56 @@ void simplify_print(AST_PTR tree)
 
 void print_tree_plus(AST_PTR tree)
 {
-    if (tree == NULL) {
+  if (tree == NULL)
+  {
     printf("attempt print empty tree!\n");
     return;
-}
-  
-  switch (tree -> op ) {
-  case Star : 
-    if (rank[rank_index]==1)
+  }
+
+  switch (tree->op)
+  {
+  case Star:
+    if (rank[rank_index] == 1)
     {
-      print_tree_plus (tree ->lchild); 
+      print_tree_plus(tree->lchild);
       printf("%s", "*");
     }
-    else if (rank[rank_index]>1)
+    else if (rank[rank_index] > 1)
     {
-      printf("%c",'(');
-      print_tree_plus (tree ->lchild); 
-      printf("%c",')');
+      printf("%c", '(');
+      print_tree_plus(tree->lchild);
+      printf("%c", ')');
       printf("%s", "*");
     }
     rank_index++;
     return;
-  case Seq : 
-    print_tree_plus (tree -> lchild);
-    print_tree_plus (tree -> rchild);
+  case Seq:
+    print_tree_plus(tree->lchild);
+    print_tree_plus(tree->rchild);
     rank_index++;
     return;
-  case Or : 
-    if (1==2)
+  case Or:
+    if (1 == 2)
     {
-    printf("%c", '(');
-    print_tree_plus (tree -> lchild);
-    printf("%c", '|');
-    print_tree_plus (tree -> rchild);
-    printf("%c", ')');
+      printf("%c", '(');
+      print_tree_plus(tree->lchild);
+      printf("%c", '|');
+      print_tree_plus(tree->rchild);
+      printf("%c", ')');
     }
-    else if (1==1)
+    else if (1 == 1)
     {
-    print_tree_plus (tree -> lchild);
-    printf("%c", '|');
-    print_tree_plus (tree -> rchild);
+      print_tree_plus(tree->lchild);
+      printf("%c", '|');
+      print_tree_plus(tree->rchild);
     }
     rank_index++;
     return;
-  case Alpha : 
-    printf("%c", tree -> val);
+  case Alpha:
+    printf("%c", tree->val);
     rank_index++;
     return;
-  case Epsilon :
+  case Epsilon:
     printf("!");
     rank_index++;
     return;
@@ -238,31 +240,33 @@ void print_tree_plus(AST_PTR tree)
 
 int rank_calc(AST_PTR tree)
 {
-   if (tree == NULL) {
+  if (tree == NULL)
+  {
     printf("attempt print empty tree!\n");
     return -1;
   }
-  int rankl,rankr;
-  switch (tree -> op ) {
-  case Star : 
-    rankl = rank_calc (tree ->lchild);
-    rank[rank_index++]=rankl;
+  int rankl, rankr;
+  switch (tree->op)
+  {
+  case Star:
+    rankl = rank_calc(tree->lchild);
+    rank[rank_index++] = rankl;
     return rankl;
-  case Seq : 
-    rankl = rank_calc (tree -> lchild);
-    rankr = rank_calc (tree -> rchild);
-    rank[rank_index++]=rankr;
-    return rankr+1;
-  case Or : 
-    rankl = rank_calc (tree -> lchild);
-    rankr = rank_calc (tree -> rchild);
-    rank[rank_index++]=rankr;
-    return rankr+rankl;
-  case Alpha : 
-    rank[rank_index++]=1;
+  case Seq:
+    rankl = rank_calc(tree->lchild);
+    rankr = rank_calc(tree->rchild);
+    rank[rank_index++] = rankr;
+    return rankr + 1;
+  case Or:
+    rankl = rank_calc(tree->lchild);
+    rankr = rank_calc(tree->rchild);
+    rank[rank_index++] = rankr;
+    return rankr + rankl;
+  case Alpha:
+    rank[rank_index++] = 1;
     return 1;
-  case Epsilon :
-    rank[rank_index++]=1;
+  case Epsilon:
+    rank[rank_index++] = 1;
     return 1;
   }
 }
