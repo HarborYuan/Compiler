@@ -50,8 +50,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-plain
-improved
-affix
-retval
-retinf
+
+#task02
+reg2dfa
+ast.gv
