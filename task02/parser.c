@@ -41,18 +41,14 @@ static int pos = 0; /* for dfa only */
 static int rank[MAXNODE];
 static int rank_index;
 
-void next_token(void)
-{
-  if (!*current)
-  {
+void next_token(void) {
+  if (!*current) {
     current = input_buffer;
-    if (!fgets(input_buffer, MAX_STATES - 1, stdin))
-    {
+    if (!fgets(input_buffer, MAX_STATES - 1, stdin)) {
       *current = '\0';
       return;
     }
-  }
-  else
+  } else
     current++;
 
   while (isspace(*current))
@@ -66,13 +62,12 @@ AST_PTR term1(AST_PTR kleene_left);
 AST_PTR kleene();
 AST_PTR kleene1(AST_PTR fac_left);
 AST_PTR fac();
-///**********************【思考题】去掉多余括号的函数********************///
+///**********************銆愭�濊�冮銆戝幓鎺夊浣欐嫭鍙风殑鍑芥暟********************///
 void simplify_print(AST_PTR tree);
 void print_tree_plus(AST_PTR tree);
 int rank_calc(AST_PTR tree);
 
-AST_PTR start()
-{
+AST_PTR start() {
   AST_PTR leaf, root = reg();
   pos++;
   leaf = mkLeaf('$', pos);
@@ -80,24 +75,21 @@ AST_PTR start()
   simplify_print(root);
   printf("\n");
 
-  if (*current != '\0')
+  if (*current!='\0')
     printf("the parser finished at %c, before the end of RE\n", *current);
   return root;
 }
 
 /* reg -> term  reg' */
-AST_PTR reg()
-{
+AST_PTR reg() {
   AST_PTR left;
   left = term();
   return reg1(left);
 }
 
 /*  reg' -> '|' term reg' | epsilon */
-AST_PTR reg1(AST_PTR term_left)
-{
-  if (*current == '|')
-  {
+AST_PTR reg1(AST_PTR term_left) {
+  if (*current=='|') {
     next_token();
     AST_PTR right = term();
     AST_PTR mid = mkOpNode(Or, term_left, right);
@@ -107,18 +99,15 @@ AST_PTR reg1(AST_PTR term_left)
 }
 
 /*  term -> kleene term' */
-AST_PTR term()
-{
+AST_PTR term() {
   AST_PTR left;
   left = kleene();
   return term1(left);
 }
 
 /*  term' -> kleene term' | epsilon */
-AST_PTR term1(AST_PTR kleene_left)
-{
-  if (*current == '(' || isalpha(*current) || *current == '!')
-  {
+AST_PTR term1(AST_PTR kleene_left) {
+  if (*current=='(' || isalpha(*current) || *current=='!') {
     AST_PTR left = kleene();
     AST_PTR mid = mkOpNode(Seq, kleene_left, left);
     AST_PTR right = term1(mid);
@@ -128,18 +117,15 @@ AST_PTR term1(AST_PTR kleene_left)
 }
 
 /*  kleene -> fac kleene' */
-AST_PTR kleene()
-{
+AST_PTR kleene() {
   AST_PTR left;
   left = fac();
   return kleene1(left);
 }
 
 /*   kleene' -> * kleene' | epsilon */
-AST_PTR kleene1(AST_PTR fac_left)
-{
-  if (*current == '*')
-  {
+AST_PTR kleene1(AST_PTR fac_left) {
+  if (*current=='*') {
     next_token();
     AST_PTR left = mkOpNode(Star, fac_left, NULL);
     AST_PTR mid = kleene1(left);
@@ -149,30 +135,23 @@ AST_PTR kleene1(AST_PTR fac_left)
 }
 
 /*   fac -> alpha | '(' reg ')' */
-AST_PTR fac()
-{
-  if (*current == '(')
-  {
+AST_PTR fac() {
+  if (*current=='(') {
     next_token();
     AST_PTR thisreg = reg();
     next_token();
     return thisreg;
-  }
-  else if (*current == '!')
-  {
+  } else if (*current=='!') {
     next_token();
     return mkEpsilon();
-  }
-  else if (isalpha(*current))
-  {
+  } else if (isalpha(*current)) {
     AST_PTR tmp = mkLeaf(*current, pos++);
     next_token();
     return tmp;
   }
 }
 
-void simplify_print(AST_PTR tree)
-{
+void simplify_print(AST_PTR tree) {
   AST_PTR ttree = tree->lchild;
   rank_index = 0;
   rank_calc(ttree);
@@ -180,93 +159,73 @@ void simplify_print(AST_PTR tree)
   print_tree_plus(ttree);
 }
 
-void print_tree_plus(AST_PTR tree)
-{
-  if (tree == NULL)
-  {
+void print_tree_plus(AST_PTR tree) {
+  if (tree==NULL) {
     printf("attempt print empty tree!\n");
     return;
   }
 
-  switch (tree->op)
-  {
-  case Star:
-    if (rank[rank_index] == 1)
-    {
-      print_tree_plus(tree->lchild);
-      printf("%s", "*");
-    }
-    else if (rank[rank_index] > 1)
-    {
-      printf("%c", '(');
-      print_tree_plus(tree->lchild);
-      printf("%c", ')');
-      printf("%s", "*");
-    }
-    rank_index++;
-    return;
-  case Seq:
-    print_tree_plus(tree->lchild);
-    print_tree_plus(tree->rchild);
-    rank_index++;
-    return;
-  case Or:
-    if (1 == 2)
-    {
-      printf("%c", '(');
-      print_tree_plus(tree->lchild);
-      printf("%c", '|');
+  switch (tree->op) {
+    case Star:
+      if (rank[rank_index]==1) {
+        print_tree_plus(tree->lchild);
+        printf("%s", "*");
+      } else if (rank[rank_index] > 1) {
+        printf("%c", '(');
+        print_tree_plus(tree->lchild);
+        printf("%c", ')');
+        printf("%s", "*");
+      }
+      rank_index++;
+      return;
+    case Seq:print_tree_plus(tree->lchild);
       print_tree_plus(tree->rchild);
-      printf("%c", ')');
-    }
-    else if (1 == 1)
-    {
-      print_tree_plus(tree->lchild);
-      printf("%c", '|');
-      print_tree_plus(tree->rchild);
-    }
-    rank_index++;
-    return;
-  case Alpha:
-    printf("%c", tree->val);
-    rank_index++;
-    return;
-  case Epsilon:
-    printf("!");
-    rank_index++;
-    return;
+      rank_index++;
+      return;
+    case Or:
+      if (1==2) {
+        printf("%c", '(');
+        print_tree_plus(tree->lchild);
+        printf("%c", '|');
+        print_tree_plus(tree->rchild);
+        printf("%c", ')');
+      } else if (1==1) {
+        print_tree_plus(tree->lchild);
+        printf("%c", '|');
+        print_tree_plus(tree->rchild);
+      }
+      rank_index++;
+      return;
+    case Alpha:printf("%c", tree->val);
+      rank_index++;
+      return;
+    case Epsilon:printf("!");
+      rank_index++;
+      return;
   }
 }
 
-int rank_calc(AST_PTR tree)
-{
-  if (tree == NULL)
-  {
+int rank_calc(AST_PTR tree) {
+  if (tree==NULL) {
     printf("attempt print empty tree!\n");
     return -1;
   }
   int rankl, rankr;
-  switch (tree->op)
-  {
-  case Star:
-    rankl = rank_calc(tree->lchild);
-    rank[rank_index++] = rankl;
-    return rankl;
-  case Seq:
-    rankl = rank_calc(tree->lchild);
-    rankr = rank_calc(tree->rchild);
-    rank[rank_index++] = rankr;
-    return rankr + 1;
-  case Or:
-    rankl = rank_calc(tree->lchild);
-    rankr = rank_calc(tree->rchild);
-    rank[rank_index++] = rankr;
-    return rankr + rankl;
-  case Alpha:
-    rank[rank_index++] = 1;
-    return 1;
-  case Epsilon:
-    rank[rank_index++] = 1;
-    return 1;
+  switch (tree->op) {
+    case Star:rankl = rank_calc(tree->lchild);
+      rank[rank_index++] = rankl;
+      return rankl;
+    case Seq:rankl = rank_calc(tree->lchild);
+      rankr = rank_calc(tree->rchild);
+      rank[rank_index++] = rankr;
+      return rankr + 1;
+    case Or:rankl = rank_calc(tree->lchild);
+      rankr = rank_calc(tree->rchild);
+      rank[rank_index++] = rankr;
+      return rankr + rankl;
+    case Alpha:rank[rank_index++] = 1;
+      return 1;
+    case Epsilon:rank[rank_index++] = 1;
+      return 1;
   }
 }

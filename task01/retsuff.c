@@ -1,4 +1,4 @@
-/* retval.c  	XL·ÖÎöÆ÷*/
+/* retval.c  	XLåˆ†æå™¨*/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -6,157 +6,150 @@
 #include "lex.h"
 
 char err_id[] = "error";
-char * midexp;
+char *midexp;
 
 struct YYLVAL {
-  char * val;  /* ¼ÇÂ¼±í´ïÊ½ÖĞ¼äÁÙÊ±±äÁ¿ */
-  char * expr; /* ¼ÇÂ¼±í´ïÊ½Ç°×ºÊ½ */
+  char *val;  /* è®°å½•è¡¨è¾¾å¼ä¸­é—´ä¸´æ—¶å˜é‡ */
+  char *expr; /* è®°å½•è¡¨è¾¾å¼å‰ç¼€å¼ */
 };
 
 typedef struct YYLVAL Yylval;
 
-Yylval    *factor     ( void );
-Yylval    *term       ( void );
-Yylval    *expression ( void );
+Yylval *factor(void);
+Yylval *term(void);
+Yylval *expression(void);
 
-char *newname( void ); /* ÔÚname.cÖĞ¶¨Òå */
+char *newname(void); /* åœ¨name.cä¸­å®šä¹‰ */
 
-extern void freename( char *name );
+extern void freename(char *name);
 
-void statements ( void )
-{
+void statements(void) {
   /*  statements -> expression SEMI  |  expression SEMI statements  */
-  
+
   Yylval *temp;
   printf("Please input an infix expression and ending with \";\"\n");
-  while( !match(EOI) )    {
+  while (!match(EOI)) {
     temp = expression();
-    printf("the affix expression is %s\n", temp -> expr);
-    freename(temp -> val);
-    free(temp -> expr);
-    free(temp);    
-    if( match( SEMI ) ){
+    printf("the affix expression is %s\n", temp->expr);
+    freename(temp->val);
+    free(temp->expr);
+    free(temp);
+    if (match(SEMI)) {
       advance();
       printf("Please input an infix expression and ending with \";\"\n");
-    }
-    else
-      fprintf( stderr, "%d: Inserting missing semicolon\n", yylineno );
+    } else
+      fprintf(stderr, "%d: Inserting missing semicolon\n", yylineno);
   }
 }
 
-Yylval    *expression()
-{
+Yylval *expression() {
   /* expression -> term expression'
      expression' -> PLUS term expression' 
                  |  MINUS term expression'
                  |  epsilon           */
-  
-  Yylval  *temp, *temp2;
-  
-  char *tmpmid;  /* ¼ÇÂ¼Ç°×º±í´ïÊ½ */
+
+  Yylval *temp, *temp2;
+
+  char *tmpmid;  /* è®°å½•å‰ç¼€è¡¨è¾¾å¼ */
   char *tmpmid1;
-  
+
   temp = term();
   tmpmid = temp->expr;
-  
-  while( match( PLUS )|| match(MINUS) ) {
+
+  while (match(PLUS) || match(MINUS)) {
     char op = yytext[0];
     advance();
     temp2 = term();
-    printf("    %s %c= %s\n", temp ->val, op, temp2 ->val );
-	/* generate code by side effects */
+    printf("    %s %c= %s\n", temp->val, op, temp2->val);
+    /* generate code by side effects */
 
-    freename( temp2 ->val );
-      
-    /* ¶ÔÒÑ¾­ÊÇ±ğµÄ¾äĞÍ term PLUS term2 Éú³ÉÆä¶ÔÓ¦µÄÇ°×ºÊ½
-       ¸ÃÇ°×ºÊ½Îª£º  "+" + term->expr + " " + term2->expr  */
+    freename(temp2->val);
 
-    /* ¶ÔÒÑ¾­ÊÇ±ğµÄ¾äĞÍ term MINUS term2 Éú³ÉÆä¶ÔÓ¦µÄÇ°×ºÊ½
-       ¸ÃÇ°×ºÊ½Îª£º  "-" + term->expr + " " + term2->expr  */
-  
-  
-    tmpmid1 = (char *) malloc(strlen(temp2 -> expr) + strlen(tmpmid) + 4);
-    sprintf (tmpmid1, "%c %s %s", op, tmpmid, temp2 -> expr);
+    /* å¯¹å·²ç»æ˜¯åˆ«çš„å¥å‹ term PLUS term2 ç”Ÿæˆå…¶å¯¹åº”çš„å‰ç¼€å¼
+       è¯¥å‰ç¼€å¼ä¸ºï¼š  "+" + term->expr + " " + term2->expr  */
 
-    free(tmpmid);  /* Ò»¶¨ÒªÊÍ·Å */
+    /* å¯¹å·²ç»æ˜¯åˆ«çš„å¥å‹ term MINUS term2 ç”Ÿæˆå…¶å¯¹åº”çš„å‰ç¼€å¼
+       è¯¥å‰ç¼€å¼ä¸ºï¼š  "-" + term->expr + " " + term2->expr  */
+
+
+    tmpmid1 = (char *) malloc(strlen(temp2->expr) + strlen(tmpmid) + 4);
+    sprintf(tmpmid1, "%c %s %s", op, tmpmid, temp2->expr);
+
+    free(tmpmid);  /* ä¸€å®šè¦é‡Šæ”¾ */
 
     tmpmid = tmpmid1;
     free(temp2->expr);
-    free(temp2); 
+    free(temp2);
 
   }
-  temp->expr = tmpmid; /* ½èÓÃµÚÒ»¸öterm()µÄ½á¹¹×÷ÎªĞÂµÄ·µ»Ø */
-  
+  temp->expr = tmpmid; /* å€Ÿç”¨ç¬¬ä¸€ä¸ªterm()çš„ç»“æ„ä½œä¸ºæ–°çš„è¿”å› */
+
   return temp;
 }
 
-Yylval    *term( void)
-{
-  Yylval  *temp, *temp2 ;
-  char  *tmpmid, *tmpmid1;
+Yylval *term(void) {
+  Yylval *temp, *temp2;
+  char *tmpmid, *tmpmid1;
   temp = factor();
   tmpmid = temp->expr;
-  while( match( TIMES ) || match( DIVISION ) )    {
+  while (match(TIMES) || match(DIVISION)) {
     char op = yytext[0];
     advance();
     temp2 = factor();
-    printf("    %s %c= %s\n", temp->val, op, temp2->val );
-	/* generate code by side effects */
+    printf("    %s %c= %s\n", temp->val, op, temp2->val);
+    /* generate code by side effects */
 
-    freename( temp2->val );
+    freename(temp2->val);
 
     tmpmid1 = (char *) malloc(strlen(temp2->expr) + strlen(tmpmid) + 4);
-    sprintf ( tmpmid1, "%c %s %s", op, tmpmid, temp2 -> expr);   
+    sprintf(tmpmid1, "%c %s %s", op, tmpmid, temp2->expr);
     free(tmpmid);
     tmpmid = tmpmid1;
     free(temp2->expr);
     free(temp2);
   }
-  
+
   temp->expr = tmpmid;
   return temp;
 }
 
-Yylval    *factor( void )
-{
+Yylval *factor(void) {
   Yylval *temp;
-  char * tmpvar, *tmpexpr;
-  if( match(NUM_OR_ID) )    {
+  char *tmpvar, *tmpexpr;
+  if (match(NUM_OR_ID)) {
     tmpvar = newname();
     tmpexpr = (char *) malloc(yyleng + 1);
 
     strncpy(tmpexpr, yytext, yyleng);
-    tmpexpr[yyleng] = 0; 
+    tmpexpr[yyleng] = 0;
 
-    printf("    %s = %s\n", tmpvar, tmpexpr );
-	/* generate code by side effects */
-    
-    temp = (Yylval *) malloc(sizeof(Yylval)); 
-      /* Ò»¶¨Òª¶¯Ì¬ÉêÇë
-	 Ö¸Ïò¾Ö²¿±äÁ¿µÄÖ¸Õë¾ø¶Ô²»ÄÜÊÇ·µ»ØÖµ */
+    printf("    %s = %s\n", tmpvar, tmpexpr);
+    /* generate code by side effects */
+
+    temp = (Yylval *) malloc(sizeof(Yylval));
+    /* ä¸€å®šè¦åŠ¨æ€ç”³è¯·
+   æŒ‡å‘å±€éƒ¨å˜é‡çš„æŒ‡é’ˆç»å¯¹ä¸èƒ½æ˜¯è¿”å›å€¼ */
     temp->val = tmpvar;
     temp->expr = tmpexpr;
     advance();
 
-  } else
-    if( match(LP) ) {
+  } else if (match(LP)) {
+    advance();
+    temp = expression();
+    if (match(RP)) {
       advance();
-      temp = expression();
-      if( match(RP) ){
-	advance();
-      } else
-	fprintf(stderr, "%d: Mismatched parenthesis\n", yylineno );
-    }
-    else {
-      char *s ;
-      advance();
-      s = (char *) malloc(10);
-      strcpy(s,"error_id");
-      fprintf( stderr, "%d: Number or identifier expected\n", yylineno );
-      temp = (Yylval *) malloc( sizeof(Yylval));
-      temp->val =  newname();
-      temp->expr = s;
-    }
-  
+    } else
+      fprintf(stderr, "%d: Mismatched parenthesis\n", yylineno);
+  } else {
+    char *s;
+    advance();
+    s = (char *) malloc(10);
+    strcpy(s, "error_id");
+    fprintf(stderr, "%d: Number or identifier expected\n", yylineno);
+    temp = (Yylval *) malloc(sizeof(Yylval));
+    temp->val = newname();
+    temp->expr = s;
+  }
+
   return temp;
 }

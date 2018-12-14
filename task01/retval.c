@@ -1,96 +1,90 @@
-/* retval.c  	XL·ÖÎöÆ÷*/
+/* retval.c  	XLåˆ†æå™¨*/
 
 #include <stdio.h>
 #include "lex.h"
 
-char    *factor     ( void );
-char    *term       ( void );
-char    *expression ( void );
+char *factor(void);
+char *term(void);
+char *expression(void);
 
-extern char *newname( void       ); /* ÔÚname.cÖĞ¶¨Òå */
-extern void freename( char *name );  
+extern char *newname(void); /* åœ¨name.cä¸­å®šä¹‰ */
+extern void freename(char *name);
 
-statements()
-{
+statements() {
   /*  statements -> expression SEMI  |  expression SEMI statements  */
-  
+
   char *tempvar;
-  
-  while( !match(EOI) ) {
+
+  while (!match(EOI)) {
     tempvar = expression();
-    
-    if( match( SEMI ) )
+
+    if (match(SEMI))
       advance();
     else
-      fprintf( stderr, "%d: Inserting missing semicolon\n", yylineno );
-    
-    freename( tempvar );
+      fprintf(stderr, "%d: Inserting missing semicolon\n", yylineno);
+
+    freename(tempvar);
   }
 }
 
-char    *expression()
-{
+char *expression() {
   /* expression -> term expression'
    * expression' -> PLUS term expression' |  epsilon
    */
-  
-  char  *tempvar, *tempvar2;
-  
+
+  char *tempvar, *tempvar2;
+
   tempvar = term();
-  
-  while( match( PLUS ) || match (MINUS) ) {
+
+  while (match(PLUS) || match(MINUS)) {
     char op = yytext[0];
     advance();
     tempvar2 = term();
-    printf("    %s %c= %s\n", tempvar, op, tempvar2 );
-    freename( tempvar2 );
+    printf("    %s %c= %s\n", tempvar, op, tempvar2);
+    freename(tempvar2);
   }
-  
+
   return tempvar;
 }
 
-char    *term()
-{
-  char  *tempvar, *tempvar2 ;
-  
+char *term() {
+  char *tempvar, *tempvar2;
+
   tempvar = factor();
-  while( match( TIMES ) || match (DIVISION) ) {
+  while (match(TIMES) || match(DIVISION)) {
     char op = yytext[0];
     advance();
     tempvar2 = factor();
-    printf("    %s %c= %s\n", tempvar, op, tempvar2 );
-    freename( tempvar2 );
+    printf("    %s %c= %s\n", tempvar, op, tempvar2);
+    freename(tempvar2);
   }
-  
+
   return tempvar;
 }
 
-char    *factor()
-{
+char *factor() {
   char *tempvar;
-  
-  if( match(NUM_OR_ID) ) {
-    /* ÓÉÓÚyytext²»ÊÇÒÔ'\0'½áÎ²,Òò´ËÖ»ÄÜ´òÓ¡yyleng³¤¶È,ÓÃ¸ñÊ½¿ØÖÆ×Ö·û
-     * %0.*s, Ëü½«È¡yyleng×÷Îª´òÓ¡µÄ³¤¶È,ÕâÒ²ÊÇ±ä³¤¶È´òÓ¡µÄ³£ÓÃ·½·¨
+
+  if (match(NUM_OR_ID)) {
+    /* ç”±äºyytextä¸æ˜¯ä»¥'\0'ç»“å°¾,å› æ­¤åªèƒ½æ‰“å°yylengé•¿åº¦,ç”¨æ ¼å¼æ§åˆ¶å­—ç¬¦
+     * %0.*s, å®ƒå°†å–yylengä½œä¸ºæ‰“å°çš„é•¿åº¦,è¿™ä¹Ÿæ˜¯å˜é•¿åº¦æ‰“å°çš„å¸¸ç”¨æ–¹æ³•
      */
-    
-    printf("    %s = %0.*s\n", tempvar = newname(), yyleng, yytext );
-    advance(); 
-  }
-  else if( match(LP) ) {
-    advance(); 
+
+    printf("    %s = %0.*s\n", tempvar = newname(), yyleng, yytext);
+    advance();
+  } else if (match(LP)) {
+    advance();
     tempvar = expression();
-    if( match(RP) )
+    if (match(RP))
       advance();
     else {
       advance();
-      fprintf(stderr, "%d: Mismatched parenthesis\n", yylineno );
+      fprintf(stderr, "%d: Mismatched parenthesis\n", yylineno);
     }
-  }
-  else {
+  } else {
     tempvar = newname();
     advance();
-    fprintf( stderr, "%d: Number or identifier expected\n", yylineno );
+    fprintf(stderr, "%d: Number or identifier expected\n", yylineno);
   }
   return tempvar;
 }

@@ -1,96 +1,93 @@
-/*lex.c	 XL·ÖÎöÆ÷ */
+/*lex.c	 XLåˆ†æå™¨ */
 
 
 #include "lex.h"
 #include <stdio.h>
 #include <ctype.h>
 
-char       *yytext   = "";  /* µ±Ç°´ÊĞÎ,×¢ÒâÓÉÓÚÊÇÖ±½ÓÖ¸Ïò
-			       ĞĞ»º³åÇøinput_buffer,Òò´Ë²»ÊÇÒÔ'\0'½áÎ²,
-			       Òò´ËÊ¹ÓÃÊ±ÒªĞ¡ĞÄ, Éè³õÖµÎª0, ±íÊ¾»º³åÇøÎª¿Õ,
-			       ĞèÒªÖØĞÂ¶ÁĞĞ */
-int        yyleng    = 0;   /* ´ÊĞÎµÄ³¤¶È	 */
-int        yylineno  = 0;   /* ÊäÈëµÄĞĞºÅ	*/
+char *yytext = "";  /* å½“å‰è¯å½¢,æ³¨æ„ç”±äºæ˜¯ç›´æ¥æŒ‡å‘
+			       è¡Œç¼“å†²åŒºinput_buffer,å› æ­¤ä¸æ˜¯ä»¥'\0'ç»“å°¾,
+			       å› æ­¤ä½¿ç”¨æ—¶è¦å°å¿ƒ, è®¾åˆå€¼ä¸º0, è¡¨ç¤ºç¼“å†²åŒºä¸ºç©º,
+			       éœ€è¦é‡æ–°è¯»è¡Œ */
+int yyleng = 0;   /* è¯å½¢çš„é•¿åº¦	 */
+int yylineno = 0;   /* è¾“å…¥çš„è¡Œå·	*/
 
-lex()
-{
+lex() {
   static char input_buffer[128];
-  char        *current;
-  
-  current = yytext + yyleng;  	/* Ìø¹ıÒÔ¶Á¹ıµÄ´ÊĞÎ */
+  char *current;
 
-  while( 1 ) {                  /* ¶ÁÏÂÒ»¸ö´ÊĞÎ     */
-    while( !*current ) {
-      /* Èç¹ûµ±Ç°»º³åÇøÒÑ¶ÁÍê,ÖØĞÂ´Ó¼üÅÌ¶ÁÈëĞÂµÄÒ»ĞĞ.
-	 ²¢ÇÒÌø¹ı¿Õ¸ñ 
+  current = yytext + yyleng;    /* è·³è¿‡ä»¥è¯»è¿‡çš„è¯å½¢ */
+
+  while (1) {                  /* è¯»ä¸‹ä¸€ä¸ªè¯å½¢     */
+    while (!*current) {
+      /* å¦‚æœå½“å‰ç¼“å†²åŒºå·²è¯»å®Œ,é‡æ–°ä»é”®ç›˜è¯»å…¥æ–°çš„ä¸€è¡Œ.
+	 å¹¶ä¸”è·³è¿‡ç©ºæ ¼ 
       */
-      
+
       current = input_buffer;
-      /* Èç¹û¶ÁĞĞÓĞÎó,·µ»Ø EOI */
-      if( !fgets( input_buffer, 127, stdin ) ) {
-	*current = '\0' ;
-	return EOI;
+      /* å¦‚æœè¯»è¡Œæœ‰è¯¯,è¿”å› EOI */
+      if (!fgets(input_buffer, 127, stdin)) {
+        *current = '\0';
+        return EOI;
       }
-      
+
       ++yylineno;
-      
-      while( isspace(*current) )
-	++current;
+
+      while (isspace(*current))
+        ++current;
     }
 
-    for( ; *current ; ++current ) {
+    for (; *current; ++current) {
       /* Get the next token */
-      
+
       yytext = current;
       yyleng = 1;
-      
-      /* ·µ»Ø²»Í¬µÄ´Ê»ã´úÂë */
-      switch ( *current ) {
-        case ';': return SEMI  ;
-        case '+': return PLUS  ;
-	case '-': return MINUS ;
-	case '/': return DIVISION;
-        case '*': return TIMES ;
-        case '(': return LP    ;
-        case ')': return RP    ;
+
+      /* è¿”å›ä¸åŒçš„è¯æ±‡ä»£ç  */
+      switch (*current) {
+        case ';': return SEMI;
+        case '+': return PLUS;
+        case '-': return MINUS;
+        case '/': return DIVISION;
+        case '*': return TIMES;
+        case '(': return LP;
+        case ')': return RP;
 
         case '\n':
         case '\t':
         case ' ' : break;
 
         default:
-	  if( !isalnum(*current) )
-	    fprintf(stderr, "Ignoring illegal input <%c>\n", *current);
-	  else {
-	    while( isalnum(*current) )
-	      ++current;
-	    
-	    yyleng = current - yytext;
-	    return NUM_OR_ID;
-	  }
+          if (!isalnum(*current))
+            fprintf(stderr, "Ignoring illegal input <%c>\n", *current);
+          else {
+            while (isalnum(*current))
+              ++current;
 
-	  break;
+            yyleng = current - yytext;
+            return NUM_OR_ID;
+          }
+
+          break;
       }
     }
   }
 }
 
-static int Lookahead = -1;      /* ÏòÇ°²é¿´µÄ´Ê»ã,Éè³õÖµÎª-1
-				   ±íÊ¾µÚÒ»´Îµ÷ÓÃmatchº¯ÊıÊ±
-				   ±ØĞëÒª¶ÁÈ¡Ò»¸ö´Ê»ã */
+static int Lookahead = -1;      /* å‘å‰æŸ¥çœ‹çš„è¯æ±‡,è®¾åˆå€¼ä¸º-1
+				   è¡¨ç¤ºç¬¬ä¸€æ¬¡è°ƒç”¨matchå‡½æ•°æ—¶
+				   å¿…é¡»è¦è¯»å–ä¸€ä¸ªè¯æ±‡ */
 
-int match( int token )
-{
-  /* ÅĞ¶ÏtokenÊÇ·ñºÍµ±Ç°ÏòÇ°²é¿´µÄ´Ê»ãÏàÍ¬. */
-  
-  if( Lookahead == -1 )
+int match(int token) {
+  /* åˆ¤æ–­tokenæ˜¯å¦å’Œå½“å‰å‘å‰æŸ¥çœ‹çš„è¯æ±‡ç›¸åŒ. */
+
+  if (Lookahead==-1)
     Lookahead = lex();
-  
-  return token == Lookahead;
+
+  return token==Lookahead;
 }
 
-void advance()
-{
-  /* ÏòÇ°¶¼Ò»¸ö´Ê»ã */
+void advance() {
+  /* å‘å‰éƒ½ä¸€ä¸ªè¯æ±‡ */
   Lookahead = lex();
 }

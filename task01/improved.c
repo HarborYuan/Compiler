@@ -1,127 +1,117 @@
-/*improved.c 		XL·ÖÎöÆ÷ */
+/*improved.c 		XLåˆ†æå™¨ */
 
 /* Revised parser  */
-int	legal_lookahead(int first_arg, ... );
+int legal_lookahead(int first_arg, ...);
 #include <stdio.h>
 #include "lex.h"
 
-void    factor      ( void );
-void    term        ( void );
-void    expression  ( void );
+void factor(void);
+void term(void);
+void expression(void);
 
-statements()
-{
+statements() {
   /*  statements -> expression SEMI |  expression SEMI statements */
 
-  while( !match(EOI) )
-    {
-      expression();
-      
-      if( match( SEMI ) )
-	advance();
-      else
-	fprintf( stderr, "%d: Inserting missing semicolon\n", yylineno );
-    }
+  while (!match(EOI)) {
+    expression();
+
+    if (match(SEMI))
+      advance();
+    else
+      fprintf(stderr, "%d: Inserting missing semicolon\n", yylineno);
+  }
 }
 
-void    expression()
-{
+void expression() {
   /* expression  -> term expression'
    * expression' -> PLUS term expression' |  epsilon
    */
 
-  if ( !legal_lookahead( NUM_OR_ID, LP, 0 ) )
+  if (!legal_lookahead(NUM_OR_ID, LP, 0))
     return;
 
   term();
-  while( match( PLUS ) || match (MINUS) ) {
+  while (match(PLUS) || match(MINUS)) {
     advance();
     term();
   }
 }
 
-void    term()
-{
-  if( !legal_lookahead( NUM_OR_ID, LP, 0 ) )
+void term() {
+  if (!legal_lookahead(NUM_OR_ID, LP, 0))
     return;
-  
+
   factor();
-  while( match( TIMES ) || match( DIVISION ) ) {
+  while (match(TIMES) || match(DIVISION)) {
     advance();
     factor();
   }
 }
 
-void    factor()
-{
-  if( !legal_lookahead( NUM_OR_ID, LP, 0 ) )
+void factor() {
+  if (!legal_lookahead(NUM_OR_ID, LP, 0))
     return;
-  
-  if( match(NUM_OR_ID) )
+
+  if (match(NUM_OR_ID))
     advance();
-  
-  else if( match(LP) )
-    {
+
+  else if (match(LP)) {
+    advance();
+    expression();
+    if (match(RP))
       advance();
-      expression();
-      if( match(RP) )
-	advance();
-      else
-	fprintf( stderr, "%d: Mismatched parenthesis\n", yylineno );
-    }
-  else
-    fprintf( stderr, "%d: Number or identifier expected\n", yylineno );
+    else
+      fprintf(stderr, "%d: Mismatched parenthesis\n", yylineno);
+  } else
+    fprintf(stderr, "%d: Number or identifier expected\n", yylineno);
 }
 
 #include <stdarg.h>
 
 #define MAXFIRST 16
-#define SYNCH	 SEMI
+#define SYNCH     SEMI
 
-int	legal_lookahead(int first_arg, ... )
-
-{
-  /* ±¾º¯ÊıÊÇÒ»¸öµäĞÍµÄ¿É±ä²ÎÊıµÄº¯Êı,Æä²ÎÊıÊÇ¿ÉÄÜµÄÏÂÒ»¸öºÏ·¨ÊäÈëµÄÁĞ±í
-   * Èç¹ûÁĞ±íÎª¿Õ±íÊ¾Æ¥ÅäÎÄ¼ş½áÊø±ê¼Ç, Èç¹ûµ±Ç°ÊäÈë²»ÊÇºÏ·¨µÄ,º¯Êı½«·ÅÆú
-   * µ±Ç°ÊäÈëÖ±µ½ÓĞÒ»¸öºÏ·¨µÄÎªÖ¹. ·µ»Ø·Ç0±íÊ¾ÏòÇ°²é¿´µÄ×Ö·ûÊÇºÏ·¨µÄ,
-   * ·ñÔò±íÊ¾²»¿ÉÒÔ»Ö¸´µÄ´íÎó.
+int legal_lookahead(int first_arg, ...) {
+  /* æœ¬å‡½æ•°æ˜¯ä¸€ä¸ªå…¸å‹çš„å¯å˜å‚æ•°çš„å‡½æ•°,å…¶å‚æ•°æ˜¯å¯èƒ½çš„ä¸‹ä¸€ä¸ªåˆæ³•è¾“å…¥çš„åˆ—è¡¨
+   * å¦‚æœåˆ—è¡¨ä¸ºç©ºè¡¨ç¤ºåŒ¹é…æ–‡ä»¶ç»“æŸæ ‡è®°, å¦‚æœå½“å‰è¾“å…¥ä¸æ˜¯åˆæ³•çš„,å‡½æ•°å°†æ”¾å¼ƒ
+   * å½“å‰è¾“å…¥ç›´åˆ°æœ‰ä¸€ä¸ªåˆæ³•çš„ä¸ºæ­¢. è¿”å›é0è¡¨ç¤ºå‘å‰æŸ¥çœ‹çš„å­—ç¬¦æ˜¯åˆæ³•çš„,
+   * å¦åˆ™è¡¨ç¤ºä¸å¯ä»¥æ¢å¤çš„é”™è¯¯.
    */
 
-  va_list  	args;
-  int		tok;
-  int		lookaheads[MAXFIRST], *p = lookaheads, *current;
-  int		error_printed = 0;
-  int		rval	      = 0;
-  
-  va_start( args, first_arg );
+  va_list args;
+  int tok;
+  int lookaheads[MAXFIRST], *p = lookaheads, *current;
+  int error_printed = 0;
+  int rval = 0;
 
-  if( !first_arg ) {
-    if( match(EOI) )
+  va_start(args, first_arg);
+
+  if (!first_arg) {
+    if (match(EOI))
       rval = 1;
-    }
-  else {
+  } else {
     *p++ = first_arg;
-    while( (tok = va_arg(args, int)) && p < &lookaheads[MAXFIRST] )
+    while ((tok = va_arg(args, int)) && p < &lookaheads[MAXFIRST])
       *p++ = tok;
-    
-    while( !match( SYNCH ) ) {
-      for( current = lookaheads; current < p ; ++current )
-	if( match( *current ) ) {
-	  rval = 1;
-	  goto exit;
-	}
-      
-      if( !error_printed ) { /* ±ÜÃâÖØ¸´´òÓ¡´íÎóĞÅÏ¢ */
-	fprintf( stderr, "Line %d: Syntax error\n", yylineno );
-	error_printed = 1;
+
+    while (!match(SYNCH)) {
+      for (current = lookaheads; current < p; ++current)
+        if (match(*current)) {
+          rval = 1;
+          goto exit;
+        }
+
+      if (!error_printed) { /* é¿å…é‡å¤æ‰“å°é”™è¯¯ä¿¡æ¯ */
+        fprintf(stderr, "Line %d: Syntax error\n", yylineno);
+        error_printed = 1;
       }
-      
+
       advance();
     }
   }
-  
- exit:
-  va_end( args );
+
+  exit:
+  va_end(args);
   return rval;
 }
 

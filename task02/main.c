@@ -8,17 +8,15 @@
 #include <stdlib.h>
 #include "ast.h"
 
-
-int main(void)
-{
+int main(void) {
   AST_PTR ast;
   printf("Please input a regular expression\n");
   printf("the Epsilon is represented by exlamation mark '!':\n");
   next_token();
-  
+
   ast = start();
-  
-  print_tree (ast);
+
+  print_tree(ast);
   print_ast(ast);
   printf("\n");
   /*

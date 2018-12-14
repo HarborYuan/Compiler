@@ -1,6 +1,5 @@
-/*main.c XL·ÖÎöÆ÷ */
+/*main.c XLåˆ†æå™¨ */
 
-main()
-{
-    statements();
+main() {
+  statements();
 }
