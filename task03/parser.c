@@ -27,7 +27,6 @@
 */
 static char input_buffer[MAX_STATES] = "\0";
 
-FOLLOW_INDEX cindex[MAX_STATES] = {0};
 /*  pos index to the corresponding character and
     follow set, for dfa transformation only */
 
@@ -40,7 +39,7 @@ static int pos = 0; /* for dfa only */
 static int rank[MAXNODE];
 static int rank_index;
 
-void next_token(void) {
+void next_token() {
   if (!*current) {
     current = input_buffer;
     if (!fgets(input_buffer, MAX_STATES - 1, stdin)) {
@@ -74,7 +73,7 @@ AST_PTR start() {
   simplify_print(root);
   printf("\n");
 
-  if (*current!='\0')
+  if (*current != '\0')
     printf("the parser finished at %c, before the end of RE\n", *current);
   return root;
 }
@@ -88,7 +87,7 @@ AST_PTR reg() {
 
 /*  reg' -> '|' term reg' | epsilon */
 AST_PTR reg1(AST_PTR term_left) {
-  if (*current=='|') {
+  if (*current == '|') {
     next_token();
     AST_PTR right = term();
     AST_PTR mid = mkOpNode(Or, term_left, right);
@@ -106,7 +105,7 @@ AST_PTR term() {
 
 /*  term' -> kleene term' | epsilon */
 AST_PTR term1(AST_PTR kleene_left) {
-  if (*current=='(' || isalpha(*current) || *current=='!') {
+  if (*current == '(' || isalpha(*current) || *current == '!') {
     AST_PTR left = kleene();
     AST_PTR mid = mkOpNode(Seq, kleene_left, left);
     AST_PTR right = term1(mid);
@@ -124,7 +123,7 @@ AST_PTR kleene() {
 
 /*   kleene' -> * kleene' | epsilon */
 AST_PTR kleene1(AST_PTR fac_left) {
-  if (*current=='*') {
+  if (*current == '*') {
     next_token();
     AST_PTR left = mkOpNode(Star, fac_left, NULL);
     AST_PTR mid = kleene1(left);
@@ -135,12 +134,12 @@ AST_PTR kleene1(AST_PTR fac_left) {
 
 /*   fac -> alpha | '(' reg ')' */
 AST_PTR fac() {
-  if (*current=='(') {
+  if (*current == '(') {
     next_token();
     AST_PTR thisreg = reg();
     next_token();
     return thisreg;
-  } else if (*current=='!') {
+  } else if (*current == '!') {
     next_token();
     return mkEpsilon();
   } else if (isalpha(*current)) {
@@ -148,6 +147,7 @@ AST_PTR fac() {
     next_token();
     return tmp;
   }
+  return NULL;
 }
 
 void simplify_print(AST_PTR tree) {
@@ -159,14 +159,14 @@ void simplify_print(AST_PTR tree) {
 }
 
 void print_tree_plus(AST_PTR tree) {
-  if (tree==NULL) {
+  if (tree == NULL) {
     printf("attempt print empty tree!\n");
     return;
   }
 
   switch (tree->op) {
     case Star:
-      if (rank[rank_index]==1) {
+      if (rank[rank_index] == 1) {
         print_tree_plus(tree->lchild);
         printf("%s", "*");
       } else if (rank[rank_index] > 1) {
@@ -182,17 +182,14 @@ void print_tree_plus(AST_PTR tree) {
       rank_index++;
       return;
     case Or:
-      if (1==2) {
-        printf("%c", '(');
-        print_tree_plus(tree->lchild);
-        printf("%c", '|');
-        print_tree_plus(tree->rchild);
-        printf("%c", ')');
-      } else if (1==1) {
-        print_tree_plus(tree->lchild);
-        printf("%c", '|');
-        print_tree_plus(tree->rchild);
-      }
+//      printf("%c", '(');
+//      print_tree_plus(tree->lchild);
+//      printf("%c", '|');
+//      print_tree_plus(tree->rchild);
+//      printf("%c", ')');
+      print_tree_plus(tree->lchild);
+      printf("%c", '|');
+      print_tree_plus(tree->rchild);
       rank_index++;
       return;
     case Alpha:printf("%c", tree->val);
@@ -205,7 +202,7 @@ void print_tree_plus(AST_PTR tree) {
 }
 
 int rank_calc(AST_PTR tree) {
-  if (tree==NULL) {
+  if (tree == NULL) {
     printf("attempt print empty tree!\n");
     return -1;
   }

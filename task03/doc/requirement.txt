@@ -1,0 +1,173 @@
+﻿2016级弘毅班编译原理课程设计第3次编程作业
+
+本次作业是编写RE直接转换为DFA程序(见 Dragon Book PP 173 Ch.3.9)的第二部分.
+它将完成对第二次编程作业所生成正则表达式的抽象语法树的每个节点的相关
+属性的求解，并在此基础上将正则式直接转换为DFA.
+
+抽象语法树(AST)的数据类型定义为（见ast.h）：
+typedef enum { Star = 4, Seq = 3, Or = 2, 
+               Alpha = 5, Epsilon = 6} Kind;
+
+typedef struct ast {
+  Kind op;
+  struct ast *lchild, *rchild;
+  char val;
+  int pos; /* the position of character */
+  ATT attribute; /* the attribute for DFA generation */
+  int index;
+}  AST;
+
+typedef AST * AST_PTR;
+
+为实现RE直接转换为DFA算法，需要对RE的AST的每个结点求解
+以下5个属性：
+1/ pos:
+   仅终结符(字母和结尾标记$)具有该属性:
+   为输入RE在忽略了 |, *, (, )和 ! 后所剩余字母从左
+   到右的序号。如：
+   RE:    (a | b ) * a b b $
+   pos:    1   2     3 4 5 6
+
+2/ nullable: 
+   nullable = 1 iff 空串属于当前结点对应的RE所表示的
+                    字符串集合
+   否则 nullable = 0
+   如：当前结点所表示的RE为：(a|b)*abb，则nullable=0,
+   因为空串不属于该正规表达式所表示的语言集合. 
+
+3/ firstpos:
+   为当前结点所表示的正规表达式中出现的字符对应pos集合，
+   且该pos上的字符能作为该正规表达式所表达的字符串的首字符，
+   如：当前结点所表示的RE为：(a+b)*abb，
+   则firstpos={1,2,3}，pos=4上的字符b虽然能作为首字符出现在
+   (a|b)*abb$所生成的字符串的首字符，但是该b是由pos为2上的b提供，
+   不是pos为4上的b提供, 所以firstpos不包含4.
+
+4/ lastpos:
+   为当前结点所表示的正规表达式中出现的字符对应pos集合，
+   且该pos上的字符能作为该正规表达式所表达的字符串的尾字符，
+   如：当前结点所表示的RE为：(a+b)*abb，
+   则lastpos={5}，pos=4上的字符b虽然能作为尾字符出现在
+   (a|b)*abb$所生成的字符串的尾字符，但是该b是由pos为5上的b提供，
+   不是pos为4上的b提供, 所以lastpos不包含4.
+
+5/ followpos:
+   当前结点的属性followpos为pos组成的集合，
+   某一个pos属于当前结点的followpos当且仅当该pos对应的字符能作为该结点
+   对应的正规表达式的后随字符.
+   如：当前结点所表示的RE为：(a|b)*abb，则followpos为{$};
+   而如果结点对应的正规表达式为上述RE中的第一个a, 则对应的
+   followpos={1,2,3}，因为pos=1的a出现在(a|b)*abb所生成的字符串之中时，
+   其后随符号可以是pos=1提供的a，或pos=2提供的b，或pos=3上提供的a, 
+   但不可能在该a之后紧随pos=4提供的b.
+
+通过运行样本程序reg2dfa1.exe 或 reg2dfa (linux), 并对输出文件ast_tree.gv运行
+"dot -Tpdf ast_tree.gv -o ast_tree.pdf"(linux) 即可查看你输入的
+正规表达式的附注语法树。
+
+利用firstpos和followpos即可计算正规表达式所对应的DFA状态
+转换函数(详见龙书).
+
+现给出抽象文法对应的语义规则(其中，RE中每个字符的pos
+由函数set_pos(AST_TREE) (已给出)计算：
+
+树结构             | 语义规则
+-------------------+-----------------------------------------------
+T = Or(T1, T2)     | T.nullable = T1.nullable || T2.nullable
+                   | T.firstpos = UNION (T1.firstpos, T2.firstpos)
+                   | T.lastpos = UNION (T1.lastpos, T2.lastpos)
+	           | T1.followpos = T.followpos
+                   | T2.followpos = T.followpos
+-------------------+------------------------------------------------
+T = Seq(T1, T2)    | T.nullable = T1.nullable && T2.nullable
+                   | T.firstpos = if (T1.nullable) 
+                   |      UNION (T1.firstpos, T2.firstpos)
+                   |   else T1.firstpos
+                   | T.lastpos = if (T2.nullable)
+	           |      UNION (T1.lastpos, T2.lastpos)
+                   |   else T2.lastpos
+                   | if (T2 == Alpha && T2.val == '$') /* T is the root */
+                   |       T2.followpos = T2.pos
+                   |       T.followpos = T2.followpos 
+                   |   else T2.followpos = T.followpos
+                   | if (T2.nullabe) 
+                   |       T1.followpos = UNION(T.followpos, T2.Firstpos) 
+	           |   else T1.followpos = T2.firstpos
+-------------------+------------------------------------------------
+T = Star(T1)       | T.nullable = true
+                   | T.firstpos = T1.firstpos
+                   | T.lastpos = T1.lastpos
+	           | T1.followpos = UNION(T.followpos , T.firstpos)
+-------------------+------------------------------------------------
+T = Alpha(T1)      | T.nullable = false
+                   | T.firstpos = T1.firstpos
+                   | T.lastpos = T1.lastpos
+	           | T1.followpos = T.followpos
+-------------------+------------------------------------------------
+T = Epsilon        | T.nullable = true
+                   | T.firstpos = empty
+                   | T.lastpos = empty
+
+属性及抽象语法树的数据类型定义为（见ast.h）：
+typedef enum { Star = 4, Seq = 3, Or = 2, 
+               Alpha = 5, Epsilon = 6} Kind;
+
+typedef struct att {
+  int nullable;
+  SET * firstpos;
+  SET * lastpos;
+  SET * followpos;
+} ATT;
+
+
+typedef struct ast {
+  Kind op;
+  struct ast *lchild, *rchild;
+  char val; /* if current kind is Alpha, val is corresponding
+               ascii code of current character */
+  int pos; /* the position of character */
+  ATT attribute; /* the attribute for DFA generation */
+  int index; /* for dfa generation! DON'T modifier in your program */
+}  AST;
+
+typedef AST * AST_PTR;
+
+1/ 试对抽象语法树进行不同形式的的遍历计算出每个结点的
+   (见dfa.c中的 /* 请完成!!! */ 部分)属性，
+   使得后续转换程序能正确地输出DFA及最小DFA.
+
+注意：
+集合的API已给出，(set.h, set.c)
+其中需要要用到的运算为：
+  SET *newset()  /* 创建一个集合， 每个结点集合类型的属性
+	            必须先要创建一个集合！ */
+  ADD (SET *s, int pos) /* 将pos添加到集合s中 */
+  UNION(SET *s, SET *s2) /* 将 s2 的所有元素添加到 s 中 */
+
+例如：上述语义规则
+ 
+  T.firstpos = UNION (T1.firstpos, T2.firstpos)
+
+可编程为
+
+  SET * tmp = newset();
+  UNION (tmp, T1.firstpos);
+  UNION (tmp, T2.firstpos);
+  T.firstpos = tmp;  
+
+2/ 最小化dfa (选做)
+
+实现龙书最小化dfa算法(Alogrithm 3.39, PP 181).
+
+-----------------------------------------------------------
+
+请将完成后的dfa.c程序(不要其他的文件，也不要打包压缩)
+mailto: hanfei.wang@gmail.com
+邮件主题请标明: 学号(3)
+注意：学号和(3)一定是ASCII码（非全角汉字）。
+
+hfwang
+
+2018.10.23
+
+
