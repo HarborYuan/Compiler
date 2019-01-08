@@ -1,3 +1,9 @@
+/***********************************************/
+/*      File: grammar.y                        */
+/*      Author: Yuan Haobo                     */
+/*      Contact: yuanhaobo@whu.edu.cn          */
+/*      License: Copyright (c) 2018 Yuan Haobo */
+/***********************************************/
 %{
 /* the grammar of lambda expression */
 #include "tree.h"

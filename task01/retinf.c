@@ -1,9 +1,9 @@
-/*******************************************/
-/*  File: retinf.c                         */
-/*	Author: Yuan Haobo                     */
-/*	Contact: yuanhaobo@whu.edu.cn          */
-/*	License: Copyright (c) 2018 Yuan Haobo */
-/*******************************************/
+/***********************************************/
+/*      File: retinf.c                         */
+/*      Author: Yuan Haobo                     */
+/*      Contact: yuanhaobo@whu.edu.cn          */
+/*      License: Copyright (c) 2018 Yuan Haobo */
+/***********************************************/
 
 /* retinf.c   	AXL分析器 */
 #include <stdio.h>

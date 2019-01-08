@@ -4,12 +4,12 @@
 /*             2018.09.20                                   */
 /************************************************************/
 
-/*******************************************/
-/*  File: parser.c                         */
-/*	Author: Yuan Haobo                     */
-/*	Contact: yuanhaobo@whu.edu.cn          */
-/*	License: Copyright (c) 2018 Yuan Haobo */
-/*******************************************/
+/***********************************************/
+/*      File: parser.c                         */
+/*      Author: Yuan Haobo                     */
+/*      Contact: yuanhaobo@whu.edu.cn          */
+/*      License: Copyright (c) 2018 Yuan Haobo */
+/***********************************************/
 
 #include <ctype.h>
 #include <stdlib.h>

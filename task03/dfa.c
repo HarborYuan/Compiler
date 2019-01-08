@@ -3,12 +3,12 @@
 /*             2018.10.23                                   */
 /************************************************************/
 
-/*******************************************/
-/*  File: dfa.c                            */
-/*	Author: Yuan Haobo                     */
-/*	Contact: yuanhaobo@whu.edu.cn          */
-/*	License: Copyright (c) 2018 Yuan Haobo */
-/*******************************************/
+/***********************************************/
+/*      File: dfa.c                            */
+/*      Author: Yuan Haobo                     */
+/*      Contact: yuanhaobo@whu.edu.cn          */
+/*      License: Copyright (c) 2018 Yuan Haobo */
+/***********************************************/
 
 #include "include/ast.h"
 
