@@ -14,7 +14,7 @@
 static int nindex = 0;
 /* the cursor of new type index for the type_env[] and type structure */
 
-static int step = 0;
+int step = 0;
 
 static Type inttype = {0, 3, NULL, NULL};
 static Type_env inttype_entry = {0, NULL};
