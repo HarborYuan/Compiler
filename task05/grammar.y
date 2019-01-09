@@ -53,20 +53,20 @@ decl : LET {is_decl = 1;} ID '=' expr ';' {
   }
 
 |  expr ';' {
+  printtree($1);
   Type_ptr type = typing(NULL, $1, current);
   print_expression($1, stdout);
   printf(" |== ");
   printtype ( type );
   
-  printf("\n"); 
+  printf("\n");
   new_env();
-  printtree($1);
   free_ast($1);
   printf("please input a lambda term with \";\":\n");
   }
 ;
 
-expr : INT 
+expr : INT {$$ = $1;}
 
 | ID {
   $1->value = find_deepth((char *)$1->lchild);
