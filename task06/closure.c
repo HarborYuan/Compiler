@@ -2,7 +2,12 @@
 /*      copyright hanfei.wang@gmail.com                     */
 /*             2017.11.23                                   */
 /************************************************************/
-
+/***********************************************/
+/*      File: closure.c                        */
+/*      Author: Yuan Haobo                     */
+/*      Contact: yuanhaobo@whu.edu.cn          */
+/*      License: Copyright (c) 2018 Yuan Haobo */
+/***********************************************/
 
 #include "tree.h"
 #include "closure.h"
