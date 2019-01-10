@@ -82,7 +82,7 @@ void nullable(AST_PTR tree) {
   }
   switch (tree->op) {
     case Star :nullable(tree->lchild);
-      tree->attribute.nullable = 0;
+      tree->attribute.nullable = 1;
       return;
     case Seq :nullable(tree->lchild);
       nullable(tree->rchild);
